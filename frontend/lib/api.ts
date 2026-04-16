@@ -8,6 +8,7 @@ import {
   type ServiceKey,
   type Domain,
   type DomainDnsResponse,
+  type DomainVerificationStatus,
 } from './types';
 
 const API_BASE = process.env.NEXT_PUBLIC_BACKEND_URL || 'http://localhost:8001/api';
@@ -30,22 +31,63 @@ type RawServiceKeyList = {
   };
 };
 
+type VerificationCheck = {
+  checkType?: string;
+  passed?: boolean;
+  status?: string;
+};
+
+type ApiErrorPayload = {
+  message?: string;
+  error?: string | { message?: string; checks?: VerificationCheck[] };
+};
+
+function formatApiError(payload: ApiErrorPayload, status: number): string {
+  const fallback = `Request failed (${status})`;
+  const baseMessage =
+    typeof payload.error === 'object' && payload.error?.message
+      ? payload.error.message
+      : payload.message || (typeof payload.error === 'string' ? payload.error : fallback);
+
+  if (typeof payload.error !== 'object' || !Array.isArray(payload.error?.checks)) {
+    return baseMessage;
+  }
+
+  const passed = payload.error.checks
+    .filter((check) => check.passed || check.status === 'PASSED')
+    .map((check) => check.checkType)
+    .filter(Boolean) as string[];
+  const failed = payload.error.checks
+    .filter((check) => !(check.passed || check.status === 'PASSED'))
+    .map((check) => check.checkType)
+    .filter(Boolean) as string[];
+
+  const lines = [baseMessage];
+  if (passed.length > 0) lines.push(`Verified: ${passed.join(', ')}`);
+  if (failed.length > 0) lines.push(`Not verified: ${failed.join(', ')}`);
+  return lines.join('\n');
+}
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const response = await fetch(`${API_BASE}${path}`, {
-    ...init,
-    credentials: 'include',
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers || {}),
-    },
-  });
+  let response: Response;
+  try {
+    response = await fetch(`${API_BASE}${path}`, {
+      ...init,
+      credentials: 'include',
+      headers: {
+        'Content-Type': 'application/json',
+        ...(init?.headers || {}),
+      },
+    });
+  } catch {
+    throw new Error(`Network error: unable to reach backend at ${API_BASE}`);
+  }
 
   if (!response.ok) {
     let message = `Request failed (${response.status})`;
     try {
-      const payload = (await response.json()) as { message?: string; error?: string };
-      if (payload.message) message = payload.message;
-      if (payload.error) message = payload.error;
+      const payload = (await response.json()) as ApiErrorPayload;
+      message = formatApiError(payload, response.status);
     } catch {
       // ignore JSON parsing failures
     }
@@ -152,6 +194,10 @@ export const api = {
     dnsRecords: (organizationId: string, domainId: string) =>
       request<DomainDnsResponse>(
         `/internal/v1/admin/organizations/${organizationId}/domains/${domainId}/dns-records`
+      ),
+    verificationStatus: (organizationId: string, domainId: string) =>
+      request<DomainVerificationStatus>(
+        `/internal/v1/admin/organizations/${organizationId}/domains/${domainId}/verification-status`
       ),
     verify: (organizationId: string, domainId: string) =>
       request<Domain>(`/internal/v1/admin/organizations/${organizationId}/domains/${domainId}/verify`, {

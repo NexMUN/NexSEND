@@ -109,6 +109,20 @@ export type DomainDnsResponse = {
   };
 };
 
+export type DomainVerificationStatus = {
+  domain: string;
+  overallStatus: 'NOT_STARTED' | 'IN_PROGRESS' | 'PARTIALLY_VERIFIED' | 'VERIFIED' | 'FAILED';
+  checks: Array<{
+    type: string;
+    name: string;
+    status: 'PENDING' | 'CHECKING' | 'PASSED' | 'FAILED' | 'WARNING';
+    expectedValue: string;
+    actualValue?: string | null;
+    errorMessage?: string | null;
+    lastCheckedAt?: string | null;
+  }>;
+};
+
 export type EmailEvent = {
   id: string;
   eventType: string;

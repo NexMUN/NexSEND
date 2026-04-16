@@ -27,8 +27,12 @@ export class DomainService {
     private readonly dnsLookupService: DnsLookupService,
     private readonly sesProvider: SESProvider,
   ) {
-    this.spfIncludeDomain = this.configService.get<string>('SPF_INCLUDE_DOMAIN', '_spf.nexmun.in');
-    this.returnPathDomain = this.configService.get<string>('RETURN_PATH_DOMAIN', 'bounce.nexmun.in');
+    const awsRegion = this.configService.get<string>('AWS_REGION', 'us-east-1');
+    this.spfIncludeDomain = this.configService.get<string>('SPF_INCLUDE_DOMAIN', 'amazonses.com');
+    this.returnPathDomain = this.configService.get<string>(
+      'RETURN_PATH_DOMAIN',
+      `feedback-smtp.${awsRegion}.amazonses.com`,
+    );
   }
 
   private async getOrganizationByOrgId(organizationId: string) {

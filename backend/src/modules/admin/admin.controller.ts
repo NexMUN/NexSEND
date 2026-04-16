@@ -154,6 +154,15 @@ export class AdminController {
     return this.domainService.getDnsRecords(organizationId, domainId);
   }
 
+  @Get('organizations/:organizationId/domains/:domainId/verification-status')
+  @ApiOperation({ summary: 'Get domain verification status from dashboard admin' })
+  async getVerificationStatus(
+    @Param('organizationId') organizationId: string,
+    @Param('domainId') domainId: string,
+  ) {
+    return this.domainService.getVerificationStatus(organizationId, domainId);
+  }
+
   @Post('organizations/:organizationId/domains/:domainId/verify')
   @ApiOperation({ summary: 'Trigger domain verification from dashboard admin' })
   async verifyDomain(

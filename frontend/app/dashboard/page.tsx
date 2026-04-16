@@ -4,7 +4,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { Globe2, KeyRound, LogOut, ShieldCheck, Building2, RefreshCw, Send, Activity, LayoutDashboard, PanelLeftClose, PanelLeft, Plus, Server, Mail } from 'lucide-react';
 import { api } from '@/lib/api';
-import type { Domain, DomainDnsResponse, Organization, ServiceKey, ServiceKeyWithApiKey } from '@/lib/types';
+import type { Domain, DomainDnsResponse, DomainVerificationStatus, Organization, ServiceKey, ServiceKeyWithApiKey } from '@/lib/types';
 import { ThemeToggle } from '@/components/theme-toggle';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -43,6 +43,7 @@ export default function DashboardPage() {
   
   const [selectedOrg, setSelectedOrg] = useState<string>('');
   const [dnsPreview, setDnsPreview] = useState<DomainDnsResponse | null>(null);
+  const [dnsVerificationStatus, setDnsVerificationStatus] = useState<DomainVerificationStatus | null>(null);
   const [newOrg, setNewOrg] = useState({ name: '', organizationId: '', email: '' });
   const [newKeyName, setNewKeyName] = useState('');
   const [newDomain, setNewDomain] = useState('');
@@ -112,7 +113,11 @@ export default function DashboardPage() {
   }, []);
 
   const onLogout = async () => {
-    await api.logout();
+    try {
+      await api.logout();
+    } catch {
+      // Allow local logout navigation even when backend is temporarily unreachable.
+    }
     router.replace('/login');
   };
 
@@ -169,6 +174,7 @@ export default function DashboardPage() {
       const domains = organizationId ? await api.domains.list(organizationId) : [];
       setState((prev) => ({ ...prev, domains }));
       setDnsPreview(null);
+      setDnsVerificationStatus(null);
     });
   };
 
@@ -195,8 +201,12 @@ export default function DashboardPage() {
   const onLoadDns = async (domainId: string) => {
     if (!selectedOrg) return;
     await runAction(async () => {
-      const dns = await api.domains.dnsRecords(selectedOrg, domainId);
+      const [dns, verificationStatus] = await Promise.all([
+        api.domains.dnsRecords(selectedOrg, domainId),
+        api.domains.verificationStatus(selectedOrg, domainId),
+      ]);
       setDnsPreview(dns);
+      setDnsVerificationStatus(verificationStatus);
     });
   };
 
@@ -263,7 +273,7 @@ export default function DashboardPage() {
               </div>
 
               {error && (
-                <div className="rounded-xl border border-[color:var(--danger)]/50 bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] px-5 py-4 text-sm font-medium text-[var(--danger)] shadow-sm">
+                <div className="whitespace-pre-line rounded-xl border border-[color:var(--danger)]/50 bg-[color-mix(in_srgb,var(--danger)_10%,transparent)] px-5 py-4 text-sm font-medium text-[var(--danger)] shadow-sm">
                   {error}
                 </div>
               )}
@@ -573,16 +583,33 @@ export default function DashboardPage() {
                           Required DNS Records for {dnsPreview.domain}
                         </h3>
                         <p className="text-sm text-[var(--muted)] mt-1">Add these to your domain registrar directly.</p>
+                        {dnsVerificationStatus && (
+                          <p className="text-xs text-[var(--muted)] mt-2">
+                            Overall verification status: <span className="font-semibold">{dnsVerificationStatus.overallStatus}</span>
+                          </p>
+                        )}
                       </div>
                       <div className="p-6 bg-[color-mix(in_srgb,var(--card)_80%,transparent)] space-y-4">
                         {dnsPreview.requiredRecords.map((record) => (
-                          <div
-                            key={`${record.checkType || 'required'}-${record.resolvedRecord.name}`}
-                            className="rounded-xl border border-[var(--border)] bg-[var(--background-elevated)] p-4 shadow-sm"
-                          >
+                          <div key={`${record.checkType || 'required'}-${record.resolvedRecord.name}`} className="rounded-xl border border-[var(--border)] bg-[var(--background-elevated)] p-4 shadow-sm">
                             <div className="flex gap-4 items-center mb-2">
                               <Badge className="bg-[var(--primary)] text-[var(--primary-foreground)] rounded-md px-2">{record.resolvedRecord.type}</Badge>
                               <code className="text-sm font-bold text-[var(--foreground)]">{record.resolvedRecord.name}</code>
+                              {record.checkType && (() => {
+                                const check = dnsVerificationStatus?.checks.find((item) => item.type === record.checkType);
+                                if (!check) return null;
+                                const passed = check.status === 'PASSED';
+                                return (
+                                  <Badge
+                                    variant="outline"
+                                    className={passed
+                                      ? 'border-[var(--success)] text-[var(--success)] bg-[var(--success)]/10'
+                                      : 'border-[var(--danger)] text-[var(--danger)] bg-[var(--danger)]/10'}
+                                  >
+                                    {passed ? 'VERIFIED' : 'NOT VERIFIED'}
+                                  </Badge>
+                                );
+                              })()}
                             </div>
                             <div className="bg-[var(--background)] border border-[var(--border)] rounded-lg p-3 overflow-x-auto">
                               <code className="text-[0.8rem] text-[var(--muted)] break-all">{record.resolvedRecord.value}</code>

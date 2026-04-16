@@ -29,31 +29,35 @@ export class EmailService {
       where: { organizationId },
     });
     
-    // If organization not found, create/use fallback organization for nexmun.in
+    const fallbackDomain = this.configService.get<string>('FALLBACK_DOMAIN', 'example.com');
+    const fallbackEmail = this.configService.get<string>('FALLBACK_EMAIL', `no-reply@${fallbackDomain}`);
+    const fallbackOrgId = this.configService.get<string>('FALLBACK_ORGANIZATION_ID', 'fallback-default');
+    const fallbackOrgName = this.configService.get<string>('FALLBACK_ORGANIZATION_NAME', 'Default Fallback');
+
+    // If organization not found, create/use fallback organization
     if (!organization) {
-      this.logger.warn(`Organization ${organizationId} not found, using fallback domain nexmun.in`);
+      this.logger.warn(`Organization ${organizationId} not found, using fallback domain ${fallbackDomain}`);
       
       // Try to find existing fallback organization or create one
       organization = await this.prisma.organization.findFirst({
-        where: { name: 'NexMUN Fallback' },
+        where: { organizationId: fallbackOrgId },
       });
       
       if (!organization) {
-        const fallbackEmail = emailData.from ? `${emailData.from}@nexmun.in` : 'no-reply@nexmun.in';
         organization = await this.prisma.organization.create({
           data: {
-            organizationId: 'fallback-nexmun',
-            name: 'NexMUN Fallback',
+            organizationId: fallbackOrgId,
+            name: fallbackOrgName,
             email: fallbackEmail,
             status: 'ACTIVE',
           },
         });
         
-        // Create the nexmun.in domain for the fallback organization
+        // Create the fallback domain for the fallback organization
         await this.prisma.domain.create({
           data: {
             organizationId: organization.id,
-            domain: 'nexmun.in',
+            domain: fallbackDomain,
             isVerified: true,
             status: 'VERIFIED',
             verificationToken: `fallback-${Date.now()}`,
@@ -69,7 +73,7 @@ export class EmailService {
       data: {
         organizationId: organization.id,
         serviceKeyId: serviceKey.id,
-        fromEmail: 'temp@nexmun.in', // Will be constructed dynamically in sendDirectEmail
+        fromEmail: `temp@${fallbackDomain}`, // Will be constructed dynamically in sendDirectEmail
         fromName: emailData.fromName || null,
         toEmails: [emailData.to],
         ccEmails: emailData.cc || [],
@@ -454,10 +458,10 @@ export class EmailService {
 
   /**
    * Constructs the from email address using organization's primary domain
-   * Format: "Display Name <fromName@primaryDomain>" or fallback to nexmun.in
+   * Format: "Display Name <fromName@primaryDomain>" or fallback domain from config
    */
   private async constructFromEmail(organizationId: string, from?: string, fromName?: string): Promise<string> {
-    const fallbackDomain = this.configService.get<string>('FALLBACK_DOMAIN', 'nexmun.in');
+    const fallbackDomain = this.configService.get<string>('FALLBACK_DOMAIN', 'example.com');
     const defaultFrom = 'no-reply';
 
     this.logger.log(`🔧 Constructing from email...`);

@@ -1,8 +1,9 @@
+name: notification-backend
+
 services:
   # Development Postgres
   postgres:
     image: postgres:18.2-alpine
-    container_name: notification_postgres
     restart: unless-stopped
     environment:
       POSTGRES_USER: notification_user
@@ -25,7 +26,6 @@ services:
   # Development Redis
   redis:
     image: redis:7-alpine
-    container_name: notification_redis
     restart: unless-stopped
     command: ['redis-server', '--requirepass', 'redis_pass']
     ports:
@@ -45,7 +45,6 @@ services:
     build:
       context: .
       target: development
-    container_name: notification_app
     restart: unless-stopped
     ports:
       - '${PORT:-8001}:8001'
@@ -53,7 +52,6 @@ services:
       - ./src:/app/src
       - ./prisma:/app/prisma
       - ./nodemon.json:/app/nodemon.json
-      - ./.env:/app/.env
     environment:
       - NODE_ENV=development
       - DATABASE_URL=postgresql://notification_user:notification_pass@postgres:5432/notification_db?schema=public
@@ -63,6 +61,23 @@ services:
       - REDIS_PORT=6379
       - REDIS_PASSWORD=redis_pass
       - REDIS_KEY_PREFIX=notification-backend
+      - EMAIL_PROVIDER=${EMAIL_PROVIDER:-SES}
+      - SES_FROM_EMAIL=${SES_FROM_EMAIL:-}
+      - SES_SMTP_HOST=${SES_SMTP_HOST:-}
+      - SES_SMTP_PORT=${SES_SMTP_PORT:-587}
+      - SES_SMTP_USER=${SES_SMTP_USER:-}
+      - SES_SMTP_PASS=${SES_SMTP_PASS:-}
+      - AWS_REGION=${AWS_REGION:-us-east-1}
+      - AWS_ACCESS_KEY_ID=${AWS_ACCESS_KEY_ID:-}
+      - AWS_SECRET_ACCESS_KEY=${AWS_SECRET_ACCESS_KEY:-}
+      - AWS_SESSION_TOKEN=${AWS_SESSION_TOKEN:-}
+      - SPF_INCLUDE_DOMAIN=${SPF_INCLUDE_DOMAIN:-amazonses.com}
+      - RETURN_PATH_DOMAIN=${RETURN_PATH_DOMAIN:-feedback-smtp.us-east-1.amazonses.com}
+      - TRACKING_DOMAIN=${TRACKING_DOMAIN:-track.example.com}
+      - FALLBACK_DOMAIN=${FALLBACK_DOMAIN:-example.com}
+      - FALLBACK_EMAIL=${FALLBACK_EMAIL:-no-reply@example.com}
+      - FALLBACK_ORGANIZATION_ID=${FALLBACK_ORGANIZATION_ID:-fallback-default}
+      - FALLBACK_ORGANIZATION_NAME=${FALLBACK_ORGANIZATION_NAME:-Default Fallback}
       - PORT=8001
     networks:
       - notification_network
@@ -81,11 +96,8 @@ services:
 
 volumes:
   postgres_data:
-    name: notification-backend_postgres_data
   redis_data:
-    name: notification-backend_redis_data
 
 networks:
   notification_network:
     driver: bridge
-    name: notification_network
