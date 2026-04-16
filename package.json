@@ -1,0 +1,10 @@
+{
+  "name": "notification-system-workspace",
+  "private": true,
+  "scripts": {
+    "frontend:dev": "node scripts/frontend-runner.mjs dev",
+    "frontend:dev:port": "node scripts/frontend-runner.mjs dev --port=3000",
+    "frontend:start": "node scripts/frontend-runner.mjs start",
+    "frontend:build": "node scripts/frontend-runner.mjs build"
+  }
+}

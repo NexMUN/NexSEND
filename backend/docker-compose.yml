@@ -1,0 +1,89 @@
+services:
+  postgres:
+    image: postgres:18.2-alpine
+    container_name: notification_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: postgres
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - '${DB_PORT:-5439}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - notification_network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U postgres -d postgres']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    profiles:
+      - dev
+
+  redis:
+    image: redis:7-alpine
+    container_name: notification_redis
+    restart: unless-stopped
+    command: redis-server --requirepass ${REDIS_PASSWORD:-redis_pass}
+    ports:
+      - '${REDIS_PORT:-6381}:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - notification_network
+    healthcheck:
+      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+  app:
+    build:
+      context: .
+      target: development
+    container_name: notification_app
+    restart: unless-stopped
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/postgres?schema=public
+      - REDIS_URL=redis://:${REDIS_PASSWORD:-redis_pass}@redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+    env_file:
+      - .env
+    ports:
+      - '${PORT:-8001}:8001'
+      - '5557:5557'
+    volumes:
+      - .:/app
+      - /app/node_modules
+    networks:
+      - notification_network
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    healthcheck:
+      test: ['CMD', 'curl', '-f', 'http://localhost:8001/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    profiles:
+      - dev
+
+volumes:
+  postgres_data:
+    external: true
+    name: notification-backend_postgres_data
+  redis_data:
+    driver: local
+
+networks:
+  notification_network:
+    driver: bridge
+    name: notification_network
+    external: false

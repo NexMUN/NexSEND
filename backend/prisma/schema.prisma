@@ -1,0 +1,321 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DIRECT_URL")
+}
+
+// Organization entity
+model Organization {
+  id             String   @id @default(uuid())
+  name           String
+  organizationId String   @unique // Reference from main service
+  email          String
+  webhookUrl     String?
+  webhookSecret  String?
+  settings       Json     @default("{}")
+  metadata       Json     @default("{}")
+  status         OrgStatus @default(ACTIVE)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // Relations
+  domains        Domain[]
+  templates      EmailTemplate[]
+  emailJobs      EmailJob[]
+  
+  @@index([organizationId])
+  @@index([status])
+}
+
+// Domain entity for custom email domains
+model Domain {
+  id                String   @id @default(uuid())
+  organizationId    String
+  domain            String   @unique
+  isVerified        Boolean  @default(false)
+  verificationToken String   @unique
+  dkimSelector      String?
+  dkimPrivateKey    String?  // Will be encrypted
+  dkimPublicKey     String?
+  bounceSubdomain   String   @default("bounce")  // e.g., "bounce" for bounce.example.com
+  returnPathDomain  String?  // Our domain that handles bounces
+  spfInclude        String?  // Our SPF domain to include
+  sendGridDomainId  Int?     // Reserved provider domain authentication ID (kept for future extensibility)
+  sendGridSubdomain String?  // Reserved provider subdomain field (kept for future extensibility)
+  verificationMethod VerificationMethod @default(DNS_TXT)
+  verifiedAt        DateTime?
+  failureCount      Int      @default(0)
+  lastCheckAt       DateTime?
+  isPrimary         Boolean  @default(false)
+  status            DomainStatus @default(PENDING)
+  createdAt         DateTime @default(now())
+  updatedAt         DateTime @updatedAt
+  
+  // Relations
+  organization      Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  verificationChecks DomainVerificationCheck[]
+  
+  @@index([organizationId])
+  @@index([domain])
+  @@index([status])
+  @@index([isPrimary])
+}
+
+// Domain verification check tracking
+model DomainVerificationCheck {
+  id            String   @id @default(uuid())
+  domainId      String
+  checkType     String   // "TXT_VERIFY", "DKIM", "SPF_INCLUDE", "BOUNCE_CNAME"
+  recordName    String   // The DNS record name to check
+  expectedValue String   // The expected value
+  actualValue   String?  // What was actually found
+  status        CheckStatus @default(PENDING)
+  lastCheckedAt DateTime?
+  errorMessage  String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  domain        Domain   @relation(fields: [domainId], references: [id], onDelete: Cascade)
+  
+  @@unique([domainId, checkType])
+  @@index([domainId])
+  @@index([status])
+}
+
+// Service API keys for authentication
+model ServiceKey {
+  id               String   @id @default(uuid())
+  serviceId        String   @unique
+  apiKey           String   @unique // Hashed
+  name             String
+  permissions      Json     // What templates/actions allowed
+  webhookUrl       String?
+  isActive         Boolean  @default(true)
+  rateLimitPerHour Int      @default(1000)
+  rateLimitPerDay  Int      @default(10000)
+  lastUsedAt       DateTime?
+  expiresAt        DateTime?
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Relations
+  emailJobs        EmailJob[]
+  webhookDeliveries WebhookDelivery[]
+  
+  @@index([apiKey])
+  @@index([serviceId])
+  @@index([isActive])
+}
+
+model AdminUser {
+  id           String         @id @default(uuid())
+  email        String         @unique
+  passwordHash String
+  isActive     Boolean        @default(true)
+  lastLoginAt  DateTime?
+  createdAt    DateTime       @default(now())
+  updatedAt    DateTime       @updatedAt
+
+  sessions     AdminSession[]
+
+  @@index([email])
+  @@index([isActive])
+}
+
+model AdminSession {
+  id          String   @id @default(uuid())
+  adminUserId String
+  tokenHash   String   @unique
+  expiresAt   DateTime
+  revokedAt   DateTime?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  adminUser   AdminUser @relation(fields: [adminUserId], references: [id], onDelete: Cascade)
+
+  @@index([adminUserId])
+  @@index([expiresAt])
+  @@index([revokedAt])
+}
+
+// Email template management
+model EmailTemplate {
+  id               String   @id @default(uuid())
+  organizationId   String
+  templateCode     String
+  name             String
+  subject          String   // Supports variables like "Welcome {{firstName}}"
+  htmlContent      String   @db.Text
+  textContent      String   @db.Text
+  requiredVariables Json    // JSON array of required fields
+  optionalVariables Json    // JSON array of optional fields
+  category         TemplateCategory @default(TRANSACTIONAL)
+  version          Int      @default(1)
+  isActive         Boolean  @default(true)
+  createdBy        String?  // ServiceId that created it
+  createdAt        DateTime @default(now())
+  updatedAt        DateTime @updatedAt
+  
+  // Relations
+  organization     Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  emailJobs        EmailJob[]
+  
+  @@unique([organizationId, templateCode, version])
+  @@index([organizationId])
+  @@index([templateCode])
+  @@index([isActive])
+}
+
+// Email job tracking
+model EmailJob {
+  id             String   @id @default(uuid()) // This is the notificationId
+  organizationId String
+  templateId     String?
+  fromEmail      String
+  fromName       String?
+  toEmails       Json     // JSON array
+  ccEmails       Json?    // JSON array
+  bccEmails      Json?    // JSON array
+  variables      Json     // Template variables
+  priority       EmailPriority @default(NORMAL)
+  scheduledAt    DateTime?
+  status         EmailStatus @default(QUEUED)
+  attempts       Int      @default(0)
+  maxAttempts    Int      @default(5)
+  lastAttemptAt  DateTime?
+  sentAt         DateTime?
+  failureReason  String?
+  messageId      String?  // From SMTP server
+  serviceKeyId   String
+  metadata       Json?    // Additional tracking data
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+  
+  // Relations
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  template       EmailTemplate? @relation(fields: [templateId], references: [id])
+  serviceKey     ServiceKey @relation(fields: [serviceKeyId], references: [id])
+  events         EmailEvent[]
+  webhookDeliveries WebhookDelivery[]
+  
+  @@index([organizationId])
+  @@index([status])
+  @@index([createdAt])
+  @@index([scheduledAt])
+}
+
+// Email event tracking
+model EmailEvent {
+  id          String   @id @default(uuid())
+  emailJobId  String
+  eventType   EmailEventType
+  timestamp   DateTime @default(now())
+  details     Json?    // Provider-specific data
+  ipAddress   String?
+  userAgent   String?  // For opens/clicks
+  
+  // Relations
+  emailJob    EmailJob @relation(fields: [emailJobId], references: [id], onDelete: Cascade)
+  
+  @@index([emailJobId])
+  @@index([eventType])
+  @@index([timestamp])
+}
+
+// Webhook delivery tracking
+model WebhookDelivery {
+  id            String   @id @default(uuid())
+  emailJobId    String
+  serviceKeyId  String
+  url           String
+  payload       Json
+  status        WebhookStatus @default(PENDING)
+  attempts      Int      @default(0)
+  lastAttemptAt DateTime?
+  responseCode  Int?
+  responseBody  String?  @db.Text
+  nextRetryAt   DateTime?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+  
+  // Relations
+  emailJob      EmailJob @relation(fields: [emailJobId], references: [id], onDelete: Cascade)
+  serviceKey    ServiceKey @relation(fields: [serviceKeyId], references: [id])
+  
+  @@index([emailJobId])
+  @@index([status])
+  @@index([nextRetryAt])
+}
+
+// Enums
+enum OrgStatus {
+  ACTIVE
+  SUSPENDED
+  DELETED
+}
+
+enum DomainStatus {
+  PENDING
+  VERIFIED
+  FAILED
+  SUSPENDED
+}
+
+enum VerificationMethod {
+  DNS_TXT
+  CNAME
+}
+
+enum CheckStatus {
+  PENDING
+  CHECKING
+  PASSED
+  FAILED
+  WARNING
+}
+
+enum TemplateCategory {
+  TRANSACTIONAL
+  MARKETING
+  SYSTEM
+}
+
+enum EmailPriority {
+  HIGH
+  NORMAL
+  LOW
+}
+
+enum EmailStatus {
+  QUEUED
+  PROCESSING
+  SENT
+  FAILED
+  BOUNCED
+  COMPLAINED
+}
+
+enum EmailEventType {
+  QUEUED
+  SENT
+  DELIVERED
+  OPENED
+  CLICKED
+  BOUNCED
+  COMPLAINED
+  FAILED
+}
+
+enum WebhookStatus {
+  PENDING
+  SUCCESS
+  FAILED
+}

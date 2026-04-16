@@ -1,0 +1,329 @@
+@import "tailwindcss";
+
+/* ─────────────────────────────────────────────────────────
+   NexSend Design Tokens – Light
+──────────────────────────────────────────────────────────── */
+:root {
+  /* Base */
+  --background: #fdfdfd;
+  --background-elevated: #ffffff;
+  --foreground: #0f0f0f;
+  --muted: #737373;
+
+  /* Surface / Card */
+  --card: #ffffff;
+  --card-foreground: #0f0f0f;
+  --border: #e5e5e5;
+  --ring: #7f38a3;
+
+  /* Brand */
+  --primary: #8a23b3;
+  --primary-hover: #721a94;
+  --primary-foreground: #faf2fd;
+
+  /* Secondary / Tag */
+  --secondary: #f5f5f5;
+  --secondary-foreground: #171717;
+
+  /* Semantic */
+  --danger: #c0424a;
+  --danger-foreground: #fff5f5;
+  --success: #1a8060;
+  --warning: #b07428;
+
+  /* Sidebar */
+  --sidebar-bg: #f5f5f5;
+  --sidebar-fg: #525252;
+  --sidebar-hover: rgba(0,0,0,0.04);
+  --sidebar-active-fg: #0f0f0f;
+  --sidebar-border: #e5e5e5;
+
+  /* Radii */
+  --radius: 14px;
+  --radius-sm: 8px;
+
+  /* Ambient Gradients */
+  --ambient-1: rgba(0, 0, 0, 0.02);
+  --ambient-2: rgba(0, 0, 0, 0.015);
+
+  /* Shadows */
+  --shadow-soft: 0 4px 24px rgba(62,20,89,0.06);
+  --shadow-medium: 0 8px 32px rgba(62,20,89,0.1);
+  --shadow-strong: 0 16px 48px rgba(62,20,89,0.15);
+}
+
+/* ─────────────────────────────────────────────────────────
+   NexSend Design Tokens – Dark
+──────────────────────────────────────────────────────────── */
+.dark {
+  --background: #121212;
+  --background-elevated: #1a1a1a;
+  --foreground: #ededed;
+  --muted: #a1a1a1;
+
+  --card: #161616;
+  --card-foreground: #ededed;
+  --border: #2e2e2e;
+  --ring: #ac6fd4;
+
+  --primary: #ac6fd4;
+  --primary-hover: #ba81df;
+  --primary-foreground: #17071f;
+
+  --secondary: #262626;
+  --secondary-foreground: #d4d4d4;
+
+  --danger: #d96870;
+  --danger-foreground: #2a0b0d;
+  --success: #67c4a7;
+  --warning: #c9a060;
+
+  --sidebar-bg: #0a0a0a;
+  --sidebar-fg: #a1a1a1;
+  --sidebar-hover: rgba(255,255,255,0.06);
+  --sidebar-border: #1e1e1e;
+
+  /* Ambient Gradients (Neutral for soft black) */
+  --ambient-1: rgba(255, 255, 255, 0.02);
+  --ambient-2: rgba(255, 255, 255, 0.015);
+
+  --shadow-soft: 0 4px 24px rgba(0,0,0,0.35);
+  --shadow-medium: 0 8px 32px rgba(0,0,0,0.45);
+  --shadow-strong: 0 16px 60px rgba(0,0,0,0.6);
+}
+
+/* ─────────────────────────────────────────────────────────
+   Reset
+──────────────────────────────────────────────────────────── */
+* {
+  border-color: var(--border);
+  box-sizing: border-box;
+}
+
+html, body {
+  height: 100%;
+}
+
+body {
+  margin: 0;
+  font-family: var(--font-body), system-ui, sans-serif;
+  background: var(--background);
+  color: var(--foreground);
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-display), serif;
+  letter-spacing: -0.018em;
+}
+
+code, pre, .font-mono {
+  font-family: var(--font-mono), monospace;
+}
+
+::selection {
+  background: color-mix(in srgb, var(--primary) 22%, transparent);
+}
+
+/* ─────────────────────────────────────────────────────────
+   App Shell (sidebar layout)
+──────────────────────────────────────────────────────────── */
+.app-root {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+}
+
+.app-main {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  background:
+    radial-gradient(ellipse at 70% 0%, var(--ambient-1), transparent 45%),
+    radial-gradient(ellipse at 10% 90%, var(--ambient-2), transparent 40%),
+    var(--background);
+}
+
+.page-scroll {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+}
+
+/* ─────────────────────────────────────────────────────────
+   Surface & Glass
+──────────────────────────────────────────────────────────── */
+.surface {
+  border: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+  box-shadow: var(--shadow-soft);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+}
+
+.glass-card {
+  border: 1px solid color-mix(in srgb, var(--primary) 20%, var(--border));
+  background: color-mix(in srgb, var(--card) 80%, transparent);
+  box-shadow: var(--shadow-medium);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+}
+
+/* ─────────────────────────────────────────────────────────
+   Sidebar Chrome
+──────────────────────────────────────────────────────────── */
+.sidebar-root {
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-border);
+  position: relative;
+  flex-shrink: 0;
+}
+
+.sidebar-root::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  right: auto;
+  width: 1px;
+  background: linear-gradient(to bottom, transparent, color-mix(in srgb, var(--primary) 30%, transparent) 30%, color-mix(in srgb, var(--primary) 30%, transparent) 70%, transparent);
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────────────────
+   Topbar
+──────────────────────────────────────────────────────────── */
+.topbar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 24px;
+  border-bottom: 1px solid var(--border);
+  background: color-mix(in srgb, var(--card) 70%, transparent);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  flex-shrink: 0;
+}
+
+/* ─────────────────────────────────────────────────────────
+   Typography helpers
+──────────────────────────────────────────────────────────── */
+.caption {
+  color: var(--muted);
+  font-size: 0.875rem;
+}
+
+.label-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 3px 10px;
+  border-radius: 999px;
+  background: var(--secondary);
+  color: var(--secondary-foreground);
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.09em;
+  text-transform: uppercase;
+}
+
+/* ─────────────────────────────────────────────────────────
+   Stat card
+──────────────────────────────────────────────────────────── */
+.stat-card {
+  position: relative;
+  overflow: hidden;
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--card) 90%, transparent);
+  box-shadow: var(--shadow-soft);
+  padding: 20px;
+  transition: box-shadow 200ms, transform 200ms;
+}
+
+.stat-card:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-medium);
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: linear-gradient(135deg, color-mix(in srgb, var(--primary) 8%, transparent), transparent 60%);
+  pointer-events: none;
+}
+
+/* ─────────────────────────────────────────────────────────
+   Page animation
+──────────────────────────────────────────────────────────── */
+.page-animate {
+  animation: page-in 300ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@keyframes page-in {
+  from { opacity: 0; transform: translateY(10px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ─────────────────────────────────────────────────────────
+   Sidebar btn ripple
+──────────────────────────────────────────────────────────── */
+.sidebar-btn {
+  position: relative;
+  overflow: hidden;
+}
+
+.sidebar-btn::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity 150ms;
+}
+
+.sidebar-btn:hover::after { opacity: 0.04; }
+.sidebar-btn:active::after { opacity: 0.08; }
+
+/* ─────────────────────────────────────────────────────────
+   Scrollbar styling
+──────────────────────────────────────────────────────────── */
+::-webkit-scrollbar { width: 5px; height: 5px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: color-mix(in srgb, var(--muted) 40%, transparent);
+  border-radius: 99px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: color-mix(in srgb, var(--muted) 60%, transparent);
+}
+
+/* ─────────────────────────────────────────────────────────
+   Pulse loading dot
+──────────────────────────────────────────────────────────── */
+.pulse-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--primary);
+  animation: pulse 1.6s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { transform: scale(1); opacity: 0.8; }
+  50% { transform: scale(1.4); opacity: 0.3; }
+}
+
+/* ─────────────────────────────────────────────────────────
+   Key reveal banner
+──────────────────────────────────────────────────────────── */
+.key-banner {
+  border: 1px solid color-mix(in srgb, var(--primary) 35%, var(--border));
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--primary) 8%, var(--background-elevated));
+  padding: 20px 24px;
+}

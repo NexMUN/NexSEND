@@ -1,0 +1,91 @@
+services:
+  # Development Postgres
+  postgres:
+    image: postgres:18.2-alpine
+    container_name: notification_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: notification_user
+      POSTGRES_PASSWORD: notification_pass
+      POSTGRES_DB: notification_db
+      PGDATA: /var/lib/postgresql/data
+    ports:
+      - '${DB_PORT:-5433}:5432'
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    networks:
+      - notification_network
+    healthcheck:
+      test: ['CMD-SHELL', 'pg_isready -U notification_user -d notification_db']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+
+  # Development Redis
+  redis:
+    image: redis:7-alpine
+    container_name: notification_redis
+    restart: unless-stopped
+    command: ['redis-server', '--requirepass', 'redis_pass']
+    ports:
+      - '${REDIS_PORT:-6380}:6379'
+    volumes:
+      - redis_data:/data
+    networks:
+      - notification_network
+    healthcheck:
+      test: ['CMD', 'redis-cli', '-a', 'redis_pass', 'ping']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+
+  app:
+    build:
+      context: .
+      target: development
+    container_name: notification_app
+    restart: unless-stopped
+    ports:
+      - '${PORT:-8001}:8001'
+    volumes:
+      - ./src:/app/src
+      - ./prisma:/app/prisma
+      - ./nodemon.json:/app/nodemon.json
+      - ./.env:/app/.env
+    environment:
+      - NODE_ENV=development
+      - DATABASE_URL=postgresql://notification_user:notification_pass@postgres:5432/notification_db?schema=public
+      - DIRECT_URL=postgresql://notification_user:notification_pass@postgres:5432/notification_db?schema=public
+      - REDIS_URL=redis://:redis_pass@redis:6379
+      - REDIS_HOST=redis
+      - REDIS_PORT=6379
+      - REDIS_PASSWORD=redis_pass
+      - REDIS_KEY_PREFIX=notification-backend
+      - PORT=8001
+    networks:
+      - notification_network
+    depends_on:
+      postgres:
+        condition: service_started
+      redis:
+        condition: service_started
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '--quiet', 'http://localhost:8001/api/health']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    command: yarn start:dev
+
+volumes:
+  postgres_data:
+    name: notification-backend_postgres_data
+  redis_data:
+    name: notification-backend_redis_data
+
+networks:
+  notification_network:
+    driver: bridge
+    name: notification_network

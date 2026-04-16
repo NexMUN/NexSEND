@@ -1,0 +1,7 @@
+{
+  "to": "dmtosarvesh@gmail.com",
+  "from": "noreply@nexmun.in", 
+  "fromName": "NexMUN Auth",
+  "subject": "Test SES Double Domain Fix",
+  "html": "<h2>SES Fix Test 2</h2><p>Testing the double domain fix!</p>"
+}

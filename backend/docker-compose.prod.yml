@@ -1,0 +1,49 @@
+services:
+  # Redis removed - using shared Redis from docker-compose.network.yml (nexmun-shared-redis)
+
+  notification-backend:
+    build:
+      context: .
+      target: production
+    container_name: notification_backend_prod
+    restart: always
+    environment:
+      - NODE_ENV=production
+      - PORT=8001
+    env_file:
+      - .production.env
+    ports:
+      - '${PORT:-8001}:8001'
+    networks:
+      - notification_prod_network
+      - nexmun-shared-network
+    healthcheck:
+      test: ['CMD', 'wget', '--spider', '--quiet', 'http://localhost:8001/api/health']
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 60s
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
+    # Resource limits for production
+    deploy:
+      resources:
+        limits:
+          memory: 1G
+        reservations:
+          memory: 512M
+
+volumes:
+  postgres_prod_data:
+    driver: local
+
+networks:
+  notification_prod_network:
+    driver: bridge
+    name: notification_prod_network
+  nexmun-shared-network:
+    external: true
+    name: nexmun-shared-network
