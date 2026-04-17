@@ -7,6 +7,8 @@
     "frontend:start": "pnpm --filter frontend start",
     "frontend:build": "pnpm --filter frontend build",
     "backend:dev": "pnpm --filter backend start:dev",
-    "backend:build": "pnpm --filter backend build"
+    "backend:build": "pnpm --filter backend build",
+    "cli": "pnpm --filter notification-backend cli",
+    "verify:production": "pnpm --filter notification-backend verify:production"
   }
 }
