@@ -38,14 +38,8 @@ This README is the single source of truth for:
 ## 2) Install dependencies
 
 ```bash
-# repo root (frontend runner scripts)
-npm install
-
-# backend deps
-cd backend && npm install
-
-# frontend deps
-cd ../frontend && npm install
+# repo root (installs everything via pnpm workspaces)
+pnpm install
 ```
 
 ## 3) Configure environment

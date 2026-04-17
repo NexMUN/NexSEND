@@ -2,9 +2,11 @@
   "name": "notification-system-workspace",
   "private": true,
   "scripts": {
-    "frontend:dev": "node scripts/frontend-runner.mjs dev",
-    "frontend:dev:port": "node scripts/frontend-runner.mjs dev --port=3000",
-    "frontend:start": "node scripts/frontend-runner.mjs start",
-    "frontend:build": "node scripts/frontend-runner.mjs build"
+    "frontend:dev": "pnpm --filter frontend dev",
+    "frontend:dev:port": "pnpm --filter frontend dev --port=3000",
+    "frontend:start": "pnpm --filter frontend start",
+    "frontend:build": "pnpm --filter frontend build",
+    "backend:dev": "pnpm --filter backend start:dev",
+    "backend:build": "pnpm --filter backend build"
   }
 }
