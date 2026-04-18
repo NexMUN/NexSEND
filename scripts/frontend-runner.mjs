@@ -14,7 +14,7 @@ const npmArgs =
       ? ['run', 'start', '--', '-p', parsedPort]
       : ['run', 'dev', '--', '-p', parsedPort];
 
-const child = spawn('npm', npmArgs, {
+const child = spawn('pnpm', npmArgs, {
   cwd: new URL('../frontend', import.meta.url),
   stdio: 'inherit',
   shell: true,

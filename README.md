@@ -30,7 +30,7 @@ This README is the single source of truth for:
 ## 1) Prerequisites
 
 - Node.js 20+
-- npm 10+
+- pnpm 10+
 - PostgreSQL
 - Redis
 - AWS credentials (for SES path validation)
@@ -38,14 +38,8 @@ This README is the single source of truth for:
 ## 2) Install dependencies
 
 ```bash
-# repo root (frontend runner scripts)
-npm install
-
-# backend deps
-cd backend && npm install
-
-# frontend deps
-cd ../frontend && npm install
+# repo root (installs everything via pnpm workspaces)
+pnpm install
 ```
 
 ## 3) Configure environment
@@ -71,15 +65,15 @@ Minimum local variables to verify before running:
 
 ```bash
 cd backend
-npm run prisma:generate
-npm run prisma:migrate:dev
+pnpm prisma:generate
+pnpm prisma:migrate:dev
 ```
 
 ## 5) Run backend
 
 ```bash
 cd backend
-npm run start:dev
+pnpm start:dev
 ```
 
 Backend default API base: `http://localhost:8001/api`
@@ -90,25 +84,25 @@ From repo root (recommended):
 
 ```bash
 # dev on default port 3000
-npm run frontend:dev
+pnpm frontend:dev
 
 # dev on specific port
-npm run frontend:dev:port -- --port=3100
+pnpm frontend:dev:port -- --port=3100
 
 # production build for GUI
-npm run frontend:build
+pnpm frontend:build
 
 # start built GUI
-npm run frontend:start -- --port=3000
+pnpm frontend:start -- --port=3000
 ```
 
 Direct frontend commands:
 
 ```bash
 cd frontend
-npm run dev
-npm run build
-npm run start
+pnpm dev
+pnpm build
+pnpm start
 ```
 
 The root scripts call `scripts/frontend-runner.mjs` and forward the port to Next.js.
@@ -130,21 +124,21 @@ Backend CLI is production-oriented for service key operations and verification.
 
 ```bash
 cd backend
-npm run cli
-npm run cli -- help
-npm run cli -- capabilities
-npm run cli -- create-service-key
-npm run cli -- create-service-key --preset=main-backend
-npm run cli -- verify-production
+pnpm cli
+pnpm cli -- help
+pnpm cli -- capabilities
+pnpm cli -- create-service-key
+pnpm cli -- create-service-key --preset=main-backend
+pnpm cli -- verify-production
 ```
 
-NPM shortcuts:
+PNPM shortcuts:
 
 ```bash
 cd backend
-npm run service-key:create
-npm run service-key:create-main
-npm run verify:production
+pnpm service-key:create
+pnpm service-key:create-main
+pnpm verify:production
 ```
 
 ## Integrator Flow (Service Key)
@@ -161,16 +155,16 @@ Run these before shipping:
 ```bash
 # backend
 cd backend
-npm run build
-npm test
+pnpm build
+pnpm test
 
 # frontend
 cd ../frontend
-npm run lint
-npm run build
+pnpm lint
+pnpm build
 ```
 
-`backend/npm test` currently runs:
+`backend/pnpm test` currently runs:
 
 - SES production-readiness verification
 - Admin dashboard readiness verification (auth lifecycle, origin policy, contract checks)
@@ -349,8 +343,8 @@ After renaming:
 
 ```bash
 cd frontend
-npm run lint
-npm run build
+pnpm lint
+pnpm build
 ```
 
 ## Troubleshooting
@@ -374,7 +368,7 @@ npm run build
 ## SES verification failures
 
 - Check AWS credentials and region
-- Re-run `cd backend && npm run verify:production`
+- Re-run `cd backend && pnpm verify:production`
 
 ## Deep References
 

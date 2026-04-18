@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { RefreshCw, Search, Mail, Filter, ChevronDown, ChevronRight, Activity, Clock, CheckCircle2, XCircle } from 'lucide-react';
 import { api } from '@/lib/api';
 import type { Organization, EmailJob } from '@/lib/types';

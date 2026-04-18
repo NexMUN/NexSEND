@@ -18,12 +18,12 @@
 - [ ] Health endpoint monitored (`/api/health`)
 
 ## Verification
-- [ ] `npm run build` passes
-- [ ] `npm run verify:production` passes
+- [ ] `pnpm build` passes
+- [ ] `pnpm verify:production` passes
 - [ ] Smoke test send via internal email API
 
 ## CLI (Ops)
-- [ ] `npm run cli` usage documented for operators
+- [ ] `pnpm cli` usage documented for operators
 - [ ] Service-key creation done via CLI presets or checkbox permissions
 - [ ] Issued keys stored in secure vault (not files in repo)
 

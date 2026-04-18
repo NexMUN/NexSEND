@@ -14,25 +14,25 @@ Production-oriented CLI for service key operations and SES readiness checks.
 ## Commands
 
 ```bash
-npm run cli
-npm run cli -- help
-npm run cli -- capabilities
-npm run cli -- create-service-key
-npm run cli -- create-service-key --preset=main-backend
-npm run cli -- verify-production
+pnpm cli
+pnpm cli -- help
+pnpm cli -- capabilities
+pnpm cli -- create-service-key
+pnpm cli -- create-service-key --preset=main-backend
+pnpm cli -- verify-production
 ```
 
-## NPM Shortcuts
+## PNPM Shortcuts
 
 ```bash
-npm run service-key:create
-npm run service-key:create-main
-npm run verify:production
+pnpm service-key:create
+pnpm service-key:create-main
+pnpm verify:production
 ```
 
 ## Interactive Flow
 
-`npm run cli` opens a menu:
+`pnpm cli` opens a menu:
 
 1. Show capabilities
 2. Create service key
@@ -59,4 +59,4 @@ The CLI returns:
 
 - Ensure `DATABASE_URL` is configured before creating keys.
 - Keep exported key files outside VCS and secret-scan protected.
-- Run `npm run verify:production` before deployment.
+- Run `pnpm verify:production` before deployment.
