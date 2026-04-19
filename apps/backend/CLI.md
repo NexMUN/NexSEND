@@ -14,25 +14,25 @@ Production-oriented CLI for service key operations and SES readiness checks.
 ## Commands
 
 ```bash
-pnpm cli
-pnpm cli -- help
-pnpm cli -- capabilities
-pnpm cli -- create-service-key
-pnpm cli -- create-service-key --preset=main-backend
-pnpm cli -- verify-production
+bun run cli
+bun run cli -- help
+bun run cli -- capabilities
+bun run cli -- create-service-key
+bun run cli -- create-service-key --preset=main-backend
+bun run cli -- verify-production
 ```
 
-## PNPM Shortcuts
+## Bun Shortcuts
 
 ```bash
-pnpm service-key:create
-pnpm service-key:create-main
-pnpm verify:production
+bun run service-key:create
+bun run service-key:create-main
+bun run verify:production
 ```
 
 ## Interactive Flow
 
-`pnpm cli` opens a menu:
+`bun run cli` opens a menu:
 
 1. Show capabilities
 2. Create service key
@@ -59,4 +59,4 @@ The CLI returns:
 
 - Ensure `DATABASE_URL` is configured before creating keys.
 - Keep exported key files outside VCS and secret-scan protected.
-- Run `pnpm verify:production` before deployment.
+- Run `bun run verify:production` before deployment.

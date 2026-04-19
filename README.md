@@ -6,8 +6,8 @@ Built and maintained **by [NexMUN](https://nexmun.in)**.
 
 ## What This Repository Contains
 
-- `backend/`: NestJS API, queue workers, domain/email/services management, CLI utilities
-- `frontend/`: Next.js admin GUI for organizations, service keys, and domain operations
+- `apps/backend/`: NestJS API, queue workers, domain/email/services management, CLI utilities
+- `apps/frontend/`: Next.js admin GUI for organizations, service keys, and domain operations
 - `scripts/`: workspace helpers (for example frontend runner)
 
 ## Product + Provider Boundary
@@ -30,7 +30,7 @@ This README is the single source of truth for:
 ## 1) Prerequisites
 
 - Node.js 20+
-- pnpm 10+
+- Bun 1.2+
 - PostgreSQL
 - Redis
 - AWS credentials (for SES path validation)
@@ -38,14 +38,14 @@ This README is the single source of truth for:
 ## 2) Install dependencies
 
 ```bash
-# repo root (installs everything via pnpm workspaces)
-pnpm install
+# repo root (installs everything via Bun workspaces)
+bun install
 ```
 
 ## 3) Configure environment
 
 ```bash
-cd ../backend
+cd apps/backend
 cp .env.example .env
 ```
 
@@ -64,16 +64,16 @@ Minimum local variables to verify before running:
 ## 4) Prepare DB
 
 ```bash
-cd backend
-pnpm prisma:generate
-pnpm prisma:migrate:dev
+cd apps/backend
+bun run prisma:generate
+bun run prisma:migrate:dev
 ```
 
 ## 5) Run backend
 
 ```bash
-cd backend
-pnpm start:dev
+cd apps/backend
+bun run start:dev
 ```
 
 Backend default API base: `http://localhost:8001/api`
@@ -84,25 +84,25 @@ From repo root (recommended):
 
 ```bash
 # dev on default port 3000
-pnpm frontend:dev
+bun run frontend:dev
 
 # dev on specific port
-pnpm frontend:dev:port -- --port=3100
+bun run frontend:dev:port -- --port=3100
 
 # production build for GUI
-pnpm frontend:build
+bun run frontend:build
 
 # start built GUI
-pnpm frontend:start -- --port=3000
+bun run frontend:start -- --port=3000
 ```
 
 Direct frontend commands:
 
 ```bash
-cd frontend
-pnpm dev
-pnpm build
-pnpm start
+cd apps/frontend
+bun run dev
+bun run build
+bun run start
 ```
 
 The root scripts call `scripts/frontend-runner.mjs` and forward the port to Next.js.
@@ -123,22 +123,22 @@ Important:
 Backend CLI is production-oriented for service key operations and verification.
 
 ```bash
-cd backend
-pnpm cli
-pnpm cli -- help
-pnpm cli -- capabilities
-pnpm cli -- create-service-key
-pnpm cli -- create-service-key --preset=main-backend
-pnpm cli -- verify-production
+cd apps/backend
+bun run cli
+bun run cli -- help
+bun run cli -- capabilities
+bun run cli -- create-service-key
+bun run cli -- create-service-key --preset=main-backend
+bun run cli -- verify-production
 ```
 
-PNPM shortcuts:
+Bun shortcuts:
 
 ```bash
-cd backend
-pnpm service-key:create
-pnpm service-key:create-main
-pnpm verify:production
+cd apps/backend
+bun run service-key:create
+bun run service-key:create-main
+bun run verify:production
 ```
 
 ## Integrator Flow (Service Key)
@@ -154,17 +154,17 @@ Run these before shipping:
 
 ```bash
 # backend
-cd backend
-pnpm build
-pnpm test
+cd apps/backend
+bun run build
+bun run test
 
 # frontend
 cd ../frontend
-pnpm lint
-pnpm build
+bun run lint
+bun run build
 ```
 
-`backend/pnpm test` currently runs:
+`bun run test` (from `apps/backend`) currently runs:
 
 - SES production-readiness verification
 - Admin dashboard readiness verification (auth lifecycle, origin policy, contract checks)
@@ -191,7 +191,7 @@ pnpm build
 5. Health endpoint validated (`/api/health`)
 6. Service keys provisioned and vaulted securely
 
-See also: `backend/PUBLIC_LAUNCH_CHECKLIST.md`.
+See also: `apps/backend/PUBLIC_LAUNCH_CHECKLIST.md`.
 
 ## Architecture Overview
 
@@ -322,8 +322,8 @@ Flow notes:
 
 Provider-extensibility notes:
 
-- Interface: `backend/src/modules/email/interfaces/email-provider.interface.ts`
-- Factory: `backend/src/modules/email/factories/email-provider.factory.ts`
+- Interface: `apps/backend/src/modules/email/interfaces/email-provider.interface.ts`
+- Factory: `apps/backend/src/modules/email/factories/email-provider.factory.ts`
 - Active runtime provider today: SES only
 - Multi-provider support model (future): add additional `IEmailProvider` implementations, register them in factory, and resolve primary/fallback route per request
 
@@ -335,16 +335,16 @@ Attribution text where needed: **by NexMUN** linking to `https://nexmun.in`.
 
 To rename visible GUI brand/title strings, update:
 
-- `frontend/app/layout.tsx` (metadata title/description)
-- `frontend/app/dashboard/page.tsx` (header title/subtitle)
-- any additional labels in `frontend/app/*` or `frontend/components/*`
+- `apps/frontend/app/layout.tsx` (metadata title/description)
+- `apps/frontend/app/dashboard/page.tsx` (header title/subtitle)
+- any additional labels in `apps/frontend/app/*` or `apps/frontend/components/*`
 
 After renaming:
 
 ```bash
-cd frontend
-pnpm lint
-pnpm build
+cd apps/frontend
+bun run lint
+bun run build
 ```
 
 ## Troubleshooting
@@ -368,17 +368,17 @@ pnpm build
 ## SES verification failures
 
 - Check AWS credentials and region
-- Re-run `cd backend && pnpm verify:production`
+- Re-run `cd apps/backend && bun run verify:production`
 
 ## Deep References
 
 Use this README as the primary source; use these for depth:
 
-- Backend CLI details: `backend/CLI.md`
-- Backend service overview: `backend/docs/README.md`
-- Launch checklist: `backend/PUBLIC_LAUNCH_CHECKLIST.md`
-- API integration details: `backend/docs/BACKEND_INTEGRATION_GUIDE.md`
-- Service key API details: `backend/docs/SERVICE_KEY_MANAGEMENT_API.md`
+- Backend CLI details: `apps/backend/CLI.md`
+- Backend service overview: `apps/backend/docs/README.md`
+- Launch checklist: `apps/backend/PUBLIC_LAUNCH_CHECKLIST.md`
+- API integration details: `apps/backend/docs/BACKEND_INTEGRATION_GUIDE.md`
+- Service key API details: `apps/backend/docs/SERVICE_KEY_MANAGEMENT_API.md`
 
 ## License
 

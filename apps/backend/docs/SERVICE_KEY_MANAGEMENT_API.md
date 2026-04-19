@@ -893,7 +893,7 @@ All service key operations are logged with:
 First, create an admin service key using the existing CLI script:
 
 ```bash
-docker exec -it notification_app pnpm service-key:create
+docker exec -it notification_app bun run service-key:create
 # Enter: "Admin Service Key"
 # Enter: "service-keys:*,organizations:*,domains:*,emails:*"
 # Enter: (webhook URL or leave empty)
@@ -938,7 +938,7 @@ If you're currently using CLI scripts (`create-service-key.ts`), you can migrate
 
 ### Before (CLI):
 ```bash
-docker exec -it notification_app pnpm service-key:create
+docker exec -it notification_app bun run service-key:create
 ```
 
 ### After (API):

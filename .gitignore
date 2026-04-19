@@ -1,20 +1,9 @@
 .omx
-
-# Dependencies
-node_modules
-.pnpm-debug.log*
-
-# Environment
-.env
-.env.local
-.env.*.local
-
-# Build
-dist
-.next
-out
-build
-
-# System
-.DS_Store
-Thumbs.db
+.turbo
+**/node_modules
+**/dist
+**/build
+**/coverage
+**/out
+**/.next
+**/.turbo

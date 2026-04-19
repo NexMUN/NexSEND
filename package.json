@@ -1,14 +1,24 @@
 {
   "name": "notification-system-workspace",
   "private": true,
+  "packageManager": "bun@1.2.0",
   "scripts": {
-    "frontend:dev": "pnpm --filter frontend dev",
-    "frontend:dev:port": "pnpm --filter frontend dev --port=3000",
-    "frontend:start": "pnpm --filter frontend start",
-    "frontend:build": "pnpm --filter frontend build",
-    "backend:dev": "pnpm --filter backend start:dev",
-    "backend:build": "pnpm --filter backend build",
-    "cli": "pnpm --filter notification-backend cli",
-    "verify:production": "pnpm --filter notification-backend verify:production"
-  }
+    "frontend:dev": "bun scripts/frontend-runner.mjs dev",
+    "frontend:dev:port": "bun scripts/frontend-runner.mjs dev --port=3000",
+    "frontend:start": "bun scripts/frontend-runner.mjs start",
+    "frontend:build": "bun scripts/frontend-runner.mjs build",
+    "backend:dev": "bun apps/backend run dev",
+    "backend:start": "bun apps/backend run start",
+    "backend:build": "bun apps/backend run build",
+    "dev": "turbo run dev",
+    "build": "turbo run build",
+    "start": "turbo run start"
+  },
+  "devDependencies": {
+    "turbo": "^2.9.6"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/*"
+  ]
 }
