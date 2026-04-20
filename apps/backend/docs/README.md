@@ -33,10 +33,10 @@ REDIS_URL=redis://...
 ## Local Setup
 
 ```bash
-yarn install
-yarn prisma:generate
-yarn prisma:migrate:dev
-yarn start:dev
+bun install
+bun run prisma:generate
+bun run prisma:migrate:dev
+bun run start:dev
 ```
 
 ## API Surface

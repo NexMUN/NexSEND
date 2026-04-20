@@ -22,9 +22,9 @@
     "docker:up:prod": "docker compose -f docker-compose.prod.yml up -d",
     "docker:down:prod": "docker compose -f docker-compose.prod.yml down",
     "docker:logs:prod": "docker compose -f docker-compose.prod.yml logs -f",
-    "service-key:create": "pnpm run cli -- create-service-key",
+    "service-key:create": "bun run cli -- create-service-key",
     "service-key:create-main": "npx --yes ts-node -O '{\"module\":\"commonjs\",\"moduleResolution\":\"node\"}' --transpile-only scripts/create-main-backend-key.ts",
-    "verify:production": "pnpm test"
+    "verify:production": "bun run test"
   },
   "dependencies": {
     "@aws-sdk/client-ses": "^3.873.0",

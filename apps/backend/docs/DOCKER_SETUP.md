@@ -3,13 +3,13 @@
 ## Prerequisites
 - Docker and Docker Compose installed
 - Node.js 20+ (for local development)
-- Yarn package manager
+- Bun package manager
 
 ## Quick Start
 
 ### 1. Start the infrastructure (PostgreSQL + Redis)
 ```bash
-yarn docker:up
+bun run docker:up
 ```
 
 This will start:
@@ -18,22 +18,22 @@ This will start:
 
 ### 2. Install dependencies
 ```bash
-yarn install
+bun install
 ```
 
 ### 3. Generate Prisma client
 ```bash
-yarn prisma:generate
+bun run prisma:generate
 ```
 
 ### 4. Run database migrations
 ```bash
-yarn prisma:migrate:dev
+bun run prisma:migrate:dev
 ```
 
 ### 5. Seed the database (optional)
 ```bash
-yarn prisma:seed
+bun run prisma:seed
 ```
 
 This will create:
@@ -43,30 +43,30 @@ This will create:
 
 ### 6. Start the application
 ```bash
-yarn start:dev
+bun run start:dev
 ```
 
 The application will be available at:
 - API: http://localhost:8001/api
 - Swagger docs: http://localhost:8001/api/docs
 - Scalar docs: http://localhost:8001/api/reference
-- Prisma Studio: http://localhost:5556 (run `yarn prisma:studio`)
+- Prisma Studio: http://localhost:5556 (run `bun run prisma:studio`)
 
 ## Docker Commands
 
 ### Start services
 ```bash
-yarn docker:up
+bun run docker:up
 ```
 
 ### Stop services
 ```bash
-yarn docker:down
+bun run docker:down
 ```
 
 ### View logs
 ```bash
-yarn docker:logs
+bun run docker:logs
 ```
 
 ### Run with app in Docker
@@ -78,12 +78,12 @@ docker-compose -f docker-compose.yml -f docker-compose.dev.yml up
 
 ### Prisma Studio (visual database editor)
 ```bash
-yarn prisma:studio
+bun run prisma:studio
 ```
 
 ### Reset database
 ```bash
-yarn prisma:migrate:reset
+bun run prisma:migrate:reset
 ```
 
 ## Environment Variables
@@ -120,9 +120,9 @@ kill -9 <PID>
 ### Database connection issues
 1. Ensure Docker containers are running: `docker ps`
 2. Check container health: `docker-compose ps`
-3. View logs: `yarn docker:logs`
+3. View logs: `bun run docker:logs`
 
 ### Prisma issues
-1. Regenerate client: `yarn prisma:generate`
-2. Reset migrations: `yarn prisma:migrate:reset`
-3. Check database connection: `yarn prisma:db:pull`
+1. Regenerate client: `bun run prisma:generate`
+2. Reset migrations: `bun run prisma:migrate:reset`
+3. Check database connection: `bunx prisma db pull`
