@@ -7,3 +7,8 @@
 **/out
 **/.next
 **/.turbo
+**/.env
+**/.env.*
+!**/.env.example
+.DS_Store
+**/.DS_Store
